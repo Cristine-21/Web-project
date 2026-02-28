@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ScoopLink 🍦 Ice Cream Ordering</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- HOME PAGE -->
+<div id="page-home" class="page active">
+  <header>
+    <h1>🍦 ScoopLink</h1>
+    
+  </header>
+  <div class="container">
+    <div class="home-hero">
+      <h2>Scoop into Happiness!</h2>
+      <button class="btn" onclick="showPage('order')" style="margin-right:10px;">Order Now 🛒</button>
+      <button class="btn btn-outline" onclick="showPage('admin-login')">Admin Log-in 🔑</button>
+    </div>
+  </div>
+  <footer>
+    <p>📞 0929-214-1697 | 📧 margiefeliperx78@gmail.com</p>
+    <p>🔗 instagram.com/gie41440 | 🔗 tiktok.com/@%40iamgie_14</p>
+    <p>📍 Maguinao, San Rafael, Bulacan, Philippines</p>
+    <p>&copy; 2025 GieQueen's Ice Cream/Sherbet</p>
+  </footer>
+</div>
+
+<!-- ORDER PAGE -->
+<div id="page-order" class="page">
+  <header>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <button onclick="showPage('home')">← Back</button>
+      <h1>🍦 Order</h1>
+    </div>
+    <div class="cart-btn-wrap">
+      <button onclick="openCart()">🛒 Cart</button>
+      <span class="cart-badge" id="cart-count">0</span>
+    </div>
+  </header>
+  <div class="container">
+    <div class="card">
+      <h3>📅 Schedule Your Order</h3>
+      <div class="form-row" style="margin-top:10px;">
+        <div class="form-group"><label>Date</label><input type="date" id="order-date"></div>
+        <div class="form-group">
+          <label>Time</label>
+          <select id="order-time">
+            <option value="">-- Select Time --</option>
+            <option>9:00 AM</option><option>10:00 AM</option><option>11:00 AM</option><option>12:00 PM</option>
+            <option>1:00 PM</option><option>2:00 PM</option><option>3:00 PM</option><option>4:00 PM</option>
+            <option>5:00 PM</option><option>6:00 PM</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Delivery Area (for service fee calculation)</label>
+        <select id="order-area" onchange="updateDeliveryFee()">
+          <option value="">-- Select Area --</option>
+          <option value="Meycauayan">Meycauayan</option><option value="Marilao">Marilao</option>
+          <option value="Bocaue">Bocaue</option><option value="Balagtas">Balagtas</option>
+          <option value="Guiguinto">Guiguinto</option><option value="Plaridel">Plaridel</option>
+          <option value="Malolos">Malolos</option><option value="Calumpit">Calumpit</option>
+          <option value="Obando">Obando</option><option value="Valenzuela">Valenzuela</option>
+          <option value="Bulacan (Other)">Bulacan (Other)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Full Delivery Address *</label>
+        <textarea id="order-address" rows="3" placeholder="e.g. Blk 5 Lot 10, Villa Esperanza Subdivision, Brgy. Loma de Gato, Marilao, Bulacan"></textarea>
+      </div>
+      <button class="btn" onclick="continueToProducts()">Continue to Products →</button>
+    </div>
+    <div id="products-section" style="display:none;">
+      <h3 style="font-family:'Fredoka One',cursive;color:#e84393;margin:20px 0 10px;">🎉 Event Packages</h3>
+      <div class="product-grid" id="packages-grid"></div>
+      <h3 style="font-family:'Fredoka One',cursive;color:#e84393;margin:20px 0 10px;">🍨 Products</h3>
+      <div class="product-grid" id="products-grid"></div>
+    </div>
+  </div>
+</div>
+
+<!-- FLAVOR MODAL -->
+<div class="modal-overlay" id="flavor-modal">
+  <div class="modal-box">
+    <h3>🍨 Pick Your Flavors</h3>
+    <p id="flavor-info" style="font-size:0.85rem;color:#888;margin-bottom:10px;"></p>
+    <div class="flavor-list" id="flavor-options"></div>
+    <div style="margin-top:15px;display:flex;gap:8px;">
+      <button class="btn btn-sm" onclick="confirmFlavors()">Confirm</button>
+      <button class="btn btn-sm btn-outline" onclick="closeFlavors()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- CART SIDEBAR -->
+<div class="cart-overlay" id="cart-overlay" onclick="closeCart()"></div>
+<div class="cart-panel" id="cart-panel" style="display:none;">
+  <h2>🛒 Your Cart</h2>
+  <div id="cart-items"></div>
+  <div class="cart-total" id="cart-total-section" style="display:none;">
+    <div class="row"><span>Subtotal</span><span id="cart-subtotal">₱0</span></div>
+    <div class="row"><span>Delivery Fee</span><span id="cart-delivery">₱0</span></div>
+    <div class="row total-row"><span>Total</span><span id="cart-total">₱0</span></div>
+    <p style="font-size:0.75rem;color:#888;margin:10px 0;">* Packages need 50% advance payment to secure schedule. Remaing balance after service for event or delivery.</p>
+    <p style="font-size:0.75rem;color:#888;margin:10px 0;">*Customers can cancel order as long as it’s at least <strong>3 days before the scheduled date</strong> .</p>
+     <p style="font-size:0.75rem;color:#888;margin:10px 0;">* To cancel, contact us at <strong>0929-214-1697 or message our social media accounts</strong> .</p>
+    <button class="btn" style="width:100%;" onclick="goToPayment()">Proceed to Payment →</button>
+  </div>
+  <button class="btn btn-outline" style="width:100%;margin-top:10px;" onclick="closeCart()">Close</button>
+</div>
+
+<!-- PAYMENT PAGE -->
+<div id="page-payment" class="page">
+  <header>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <button onclick="showPage('order')">← Back</button>
+      <h1>🍦 Payment</h1>
+    </div>
+  </header>
+  <div class="container">
+    <div class="card" style="max-width:500px;margin:0 auto;">
+      <h3>💳 Payment Details</h3>
+      <div class="form-group"><label>Full Name *</label><input id="pay-name" placeholder="Juan Dela Cruz"></div>
+      <div class="form-group"><label>Contact No. *</label><input id="pay-contact" placeholder="09XX XXX XXXX"></div>
+      <div class="form-group"><label>Delivery Address</label><textarea id="pay-address" rows="2" readonly style="background:#f5f5f5;"></textarea></div>
+      <div class="form-group"><label>Email *</label><input type="email" id="pay-email" placeholder="juan@email.com"></div>
+      <div class="form-group"><label>Facebook Account</label><input id="pay-fb" placeholder="fb.com/juandelacruz"></div>
+      <hr style="margin:15px 0;">
+      <div class="row" style="display:flex;justify-content:space-between;margin-bottom:8px;">
+        <span>Total Bill</span><span class="price-tag" id="pay-total-display">₱0</span>
+      </div>
+      <p id="pay-half-note" style="font-size:0.8rem;color:#888;display:none;"></p>
+      <div class="form-group"><label>Amount to Pay *</label><input type="number" id="pay-amount"></div>
+      <div class="form-group">
+        <label>Payment Through *</label>
+        <select id="pay-method">
+          <option value="">-- Select --</option>
+          <option>GCash</option><option>Cash on Delivery</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Screenshot of Payment (URL)</label><input id="pay-screenshot" placeholder="Paste image link"></div>
+      <div class="form-group"><label>Payment Code *</label><input id="pay-code" placeholder="Confirmation code"></div>
+      <button class="btn" style="width:100%;" onclick="submitPayment()">Done ✅</button>
+    </div>
+  </div>
+</div>
+
+<!-- RECEIPT PAGE -->
+<div id="page-receipt" class="page">
+  <header>
+    <h1>🍦 Receipt</h1>
+    <button onclick="backToHome()">🏠 Home</button>
+  </header>
+  <div class="container">
+    <div class="receipt" id="receipt-content">
+      <h2>ScoopLink: Gie🍦Queen's Ice Cream and Sherbet </h2>
+      <p style="text-align:center;color:#888;font-size:0.85rem;">Order Receipt</p>
+      <div id="receipt-body"></div>
+    </div>
+    <div style="text-align:center;margin-top:15px;">
+      <button class="btn btn-sm" onclick="window.print()">🖨️ Print</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADMIN LOGIN -->
+<div id="page-admin-login" class="page">
+  <header>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <button onclick="showPage('home')">← Back</button>
+      <h1>🍦 Admin Login</h1>
+    </div>
+  </header>
+  <div class="container">
+    <div class="card" style="max-width:400px;margin:40px auto;">
+      <h3>🔑 Admin Login</h3>
+      <div class="form-group"><label>Email</label><input id="admin-email" placeholder="admin@scoops.ph"></div>
+      <div class="form-group"><label>Password</label><input type="password" id="admin-pass" placeholder="Password"></div>
+      <button class="btn" style="width:100%;" onclick="adminLogin()">Log In</button>
+      <p style="text-align:center;margin-top:10px;font-size:0.8rem;color:#888;">Demo: admin@scoops.ph / admin123</p>
+    </div>
+  </div>
+</div>
+
+<!-- ADMIN DASHBOARD -->
+  <div id="page-dashboard" class="page">
+  <header>
+    <h1>🍦 Admin Dashboard</h1>
+<div class="admin-notif">
+      <div class="notif-icon" onclick="toggleAdminNotif()">🔔</div>
+      </div>
+    <div class="admin-profile">
+      <div class="profile-icon" onclick="toggleAdminMenu()">🧑</div>
+      <div class="admin-dropdown" id="admin-menu">
+        <button onclick="adminLogout()">Logout</button>
+      </div>
+    </div>
+
+  </header>
+  <div class="container">
+    <div class="stats-grid" id="admin-stats"></div>
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab(this,'tab-orders')">Orders</button>
+      <button class="tab-btn" onclick="switchTab(this,'tab-cancel')">Cancellations</button>
+      <button class="tab-btn" onclick="switchTab(this,'tab-income')">Income</button>
+      <button class="tab-btn" onclick="switchTab(this,'tab-products')">Products</button>
+      <button class="tab-btn" onclick="switchTab(this,'tab-flavors')">Flavors</button>
+    </div>
+    <div id="tab-orders"></div>
+    <div id="tab-cancel" style="display:none;"></div>
+    <div id="tab-income" style="display:none;"></div>
+    <div id="tab-products" style="display:none;"></div>
+    <div id="tab-flavors" style="display:none;"></div>
+  </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
