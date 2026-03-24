@@ -1,10 +1,14 @@
 // ===== DATA =====
 // delivery fees per area
 var deliveryFees = {
-  'Meycauayan': 100, 'Marilao': 100, 'Bocaue': 120,
-  'Balagtas': 120, 'Guiguinto': 130, 'Plaridel': 140,
-  'Malolos': 150, 'Calumpit': 160, 'Obando': 130,
-  'Valenzuela': 120, 'Bulacan (Other)': 180
+  'Angat': 0, 'Balagtas': 0, 'Baliuag': 0,
+  'Bocaue': 0, 'Bulakan': 0, 'Bustos': 0,
+  'Calumpit': 0, 'Doña Remedios Trinidad': 0, 'Guiguinto': 0,
+  'Hagonoy': 0, 'Malolos': 0, 'Marilao': 0, 'Obando': 0,
+  'Meycauayan': 0, 'Norzagaray': 0, 'Pandi': 0,
+  'Paombong': 0, 'Plaridel': 0, 'Pulilan': 0,
+  'San Ildefonso': 0, 'San Jose Del Monte': 0, 'San Miguel': 0,
+  'San Rafael': 0, 'Santa Maria': 0, 'Pampanga (Other)': 0
 };
 
 var flavors = [
@@ -12,9 +16,9 @@ var flavors = [
   'Rocky Road']
 
 var products = [
-  { id:'pkg-1', name:'Party Packages', emoji:'🎉', desc:'100 pax', category:'package',
+  { id:'pkg-1', name:'Party Packages 1', emoji:'🎉', desc:'100 pax', category:'package',
     choices:[{id:'c1',name:'1 Flavor',price:4000, maxFlavors:1},{id:'c2',name:'2 Flavors',price:4500, maxFlavors:2}], stock:10 },
-  { id:'pkg-2', name:'Party Packages', emoji:'🎉', desc:'200 pax', category:'package',
+  { id:'pkg-2', name:'Party Packages 2', emoji:'🎉', desc:'200 pax', category:'package',
     choices:[{id:'c1',name:'2 Flavors',price:7500, maxFlavors:2},{id:'c2',name:'3 Flavors',price:8000, maxFlavors:3}], stock:5 },
   { id:'pkg-3', name:'Special Buko Lychee Sherbet Packages', emoji:'🎉', category:'package', fixedFlavor:true,
     choices:[{id:'c1',name:'100 pax',price:4500},{id:'c2',name:'200 pax',price:8000}], stock:5 },
@@ -35,13 +39,19 @@ var flavorPicking = { productId:'', choiceId:'', max:[], selected:[], qty:1, pro
 
 // orders for admin (demo data)
 var orders = [
-  { id:'ORD-001', customer:'Maria Santos', date:'2026-03-01', time:'2:00 PM', area:'Marilao',
-    address:'123 Sampaguita St., Brgy. Loma de Gato, Marilao, Bulacan',
-    items:'Birthday Bash (Standard) x1', total:8600, status:'confirmed' },
+  { id:'ORD-001', customer:'Maria Santos', date:'2026-03-018', time:'2:00 PM', area:'Marilao',
+   address:'123 Sampaguita St., Brgy. Loma de Gato, Marilao, Bulacan',
+    items:'Party Packages 1 (Cookies & Cream, Rocky Road) x1', paid:4500, balance:4300, total:8600, status:'pending' },
   { id:'ORD-002', customer:'Juan Cruz', date:'2026-03-05', time:'10:00 AM', area:'Malolos',
     address:'Blk 2 Lot 5, Golden Ville Subd., Brgy. Mojon, Malolos, Bulacan',
-    items:'Ice Cream Tub x3', total:1200, status:'pending' }
+    items:'Party Packages 2 (Strawbery, Ube Cheese) (', paid:3750, balance:3750, total:1200, status:'confirmed' }
 ];
+function isPackageDataBooked(date){
+    return orders.some(function(o){
+        return o.date === date && o.items.toLowerCase().includes('package')
+        && o.status !== 'cancelled';
+    })
+}
 
 // ===== NAVIGATION =====
 function showPage(page) {
@@ -62,6 +72,7 @@ function updateDeliveryFee() {
   currentDeliveryFee = deliveryFees[area] || 0;
 }
 
+
 function continueToProducts() {
   var date = document.getElementById('order-date').value;
   var time = document.getElementById('order-time').value;
@@ -70,6 +81,10 @@ function continueToProducts() {
   if (!date || !time || !area || !address) {
     alert('Please fill in all fields including your full address!');
     return;
+  }
+  if (isPackageDataBooked(date)){
+alert("This date already has a booked event package. Please choose another date.");
+return;
   }
   orderSchedule = { date: date, time: time, area: area, address: address };
   updateDeliveryFee();
@@ -124,7 +139,7 @@ function handleChoice(productId, choiceId) {
 
   var qtyElId = 'qty-' + productId;
 
-  // CLEAR FIRST ✅ (IMPORTANT)
+  // CLEAR FIRST (IMPORTANT)
   actionDiv.innerHTML = '';
 
   // Quantity controls
@@ -204,7 +219,7 @@ function changeQty(productId, delta) {
 
  function pickFlavors(productId, choiceId) {
   var product = products.find(function(p) { return p.id === productId; });
-  var choice = product.choices.find(function(c) { return c.id === choiceId; }); // ✅ ADD THIS
+  var choice = product.choices.find(function(c) { return c.id === choiceId; }); //ADD THIS
 
   var qtyEl = document.getElementById('qty-' + productId);
   var qty = qtyEl ? parseInt(qtyEl.textContent) : 1;
@@ -212,7 +227,7 @@ function changeQty(productId, delta) {
   flavorPicking = {
     productId: productId,
     choiceId: choiceId,
-    max: choice.maxFlavors || 1,   // ✅ DITO ANG FIX
+    max: choice.maxFlavors || 1,   // DITO ANG FIX
     selected: [],
     qty: qty,
     productName: product.name
@@ -263,21 +278,41 @@ function closeFlavors() {
 
 // ===== CART =====
 function addToCart(product, choice, qty, selectedFlavors) {
+  // Find existing item with same product, choice, and flavors
   var existing = cart.find(function(i) {
-    return i.productId === product.id && i.choiceId === choice.id;
+    return i.productId === product.id && 
+           i.choiceId === choice.id &&
+           // Check if flavors are the same
+           arraysEqual(i.flavors, selectedFlavors);
   });
 
   if (existing) {
+    // Same product, choice, and flavors: increase qty
     existing.qty += qty;
-    existing.flavors = selectedFlavors;
   } else {
+    // Different flavors: add a new item
     cart.push({
-      productId: product.id, productName: product.name,
-      choiceId: choice.id, choiceName: choice.name,
-      price: choice.price, qty: qty, flavors: selectedFlavors.slice()
+      productId: product.id,
+      productName: product.name,
+      choiceId: choice.id,
+      choiceName: choice.name,
+      price: choice.price,
+      qty: qty,
+      flavors: selectedFlavors.slice()
     });
   }
   updateCartBadge();
+}
+
+// Helper function to compare two arrays
+function arraysEqual(a, b) {
+  if (a.length !== b.length) return false;
+  a = a.slice().sort();
+ 
+  for (var i = 0; i < a.length; i++) {
+    if (a[i] !== b[i]) return false;
+  }
+  return true;
 }
 
 function updateCartBadge() {
@@ -314,16 +349,34 @@ function renderCart() {
 
   var subtotal = 0;
   cart.forEach(function(item, i) {
-    var itemTotal = item.price * item.qty;
-    subtotal += itemTotal;
-    container.innerHTML += '<div class="cart-item">' +
-      '<button class="remove-btn" onclick="removeCartItem(' + i + ')">✕</button>' +
-      '<strong>' + item.productName + '</strong><br>' +
-      '<span style="font-size:0.85rem;color:#888;">' + item.choiceName + ' × ' + item.qty + '</span><br>' +
-      (item.flavors.length ? '<span style="font-size:0.8rem;color:#aaa;">Flavors: ' + item.flavors.join(', ') + '</span><br>' : '') +
-      '<span class="price-tag">₱' + itemTotal.toLocaleString() + '</span></div>';
-  });
+  var itemTotal = item.price * item.qty;
+  subtotal += itemTotal;
 
+  // Build flavors display
+  var flavorText = '';
+  if (item.flavors && item.flavors.length > 0) {
+    flavorText = '<br><span style="font-size:0.8rem;color:#aaa;">Flavors: ' + item.flavors.join(', ') + '</span>';
+  }
+
+  // For items like packages, 3 gallons, Ice Cream, show flavors for each qty
+  var flavorDetails = '';
+  if (
+    item.productId.startsWith('pkg-') || 
+    item.productName.includes('3 Gallons') ||
+    item.productName === 'Ice Cream'
+  ) {
+    // Repeat flavors for each quantity
+    for (let q = 0; q < item.qty; q++) {
+      flavorDetails += '<div style="margin-left:10px;font-size:0.75rem;">- ' + (item.flavors.join(', ') || 'No flavors selected') + '</div>';
+    }
+  }
+
+  container.innerHTML += '<div class="cart-item">' +
+    '<button class="remove-btn" onclick="removeCartItem(' + i + ')">✕</button>' +
+    '<strong>' + item.productName + '</strong><br>' +
+    '<span style="font-size:0.85rem;color:#888;">' + item.choiceName + ' × ' + item.qty + '</span>' + flavorText + flavorDetails + '<br>' +
+    '<span class="price-tag">₱' + itemTotal.toLocaleString() + '</span></div>';
+});
   var total = subtotal + currentDeliveryFee;
   document.getElementById('cart-subtotal').textContent = '₱' + subtotal.toLocaleString();
   document.getElementById('cart-delivery').textContent = '₱' + currentDeliveryFee.toLocaleString();
@@ -339,27 +392,36 @@ function removeCartItem(index) {
 
 function goToPayment() {
   if (cart.length === 0) return;
-  closeCart();
-  var total = cart.reduce(function(s, i) { return s + i.price * i.qty; }, 0) + currentDeliveryFee;
-  var hasPackage = cart.some(function(i) { return i.productId.startsWith('pkg-'); });
-  var half = Math.ceil(total / 2);
 
+  closeCart();
+
+  var total = cart.reduce((s, i) => s + i.price * i.qty, 0) + currentDeliveryFee;
+
+  var hasPackage = cart.some(i => i.productId.startsWith('pkg-'));
+  var has3Gallon = cart.some(i => i.choiceName.includes('3 Gallons'));
+var hasIceCream = cart.some(i => i.productName === 'Ice Cream');
   document.getElementById('pay-address').value = orderSchedule.address;
   document.getElementById('pay-total-display').textContent = '₱' + total.toLocaleString();
-  document.getElementById('pay-amount').value = hasPackage ? half : total;
-  document.getElementById('pay-amount').min = hasPackage ? half : total;
-  document.getElementById('pay-amount').max = total;
 
-  if (hasPackage) {
-    document.getElementById('pay-half-note').style.display = 'block';
-    document.getElementById('pay-half-note').textContent =
-      'Packages require at least 50% advance (₱' + half.toLocaleString() + ') to secure schedule.';
-  } else {
-    document.getElementById('pay-half-note').style.display = 'none';
-  }
-
+ if (hasPackage || has3Gallon || hasIceCream) {
+  var half = Math.ceil(total / 2);
+  document.getElementById('pay-amount').value = half;
+  document.getElementById('pay-amount').min = half;
+}
   showPage('payment');
 }
+
+document.getElementById('pay-method').addEventListener('change', function() {
+  var selectedMethod = this.value.trim();
+
+  if (selectedMethod === "GCash") { // <-- only trigger for GCash
+    document.getElementById('qr-appear').style.display = 'block';
+    document.getElementById('screenshot-appear').style.display = 'block';
+  } else {
+    document.getElementById('qr-appear').style.display = 'none';   
+    document.getElementById('screenshot-appear').style.display = 'none'; 
+  }
+});
 
 // ===== PAYMENT =====
 function submitPayment() {
@@ -367,60 +429,159 @@ function submitPayment() {
   var contact = document.getElementById('pay-contact').value.trim();
   var email = document.getElementById('pay-email').value.trim();
   var method = document.getElementById('pay-method').value;
-  var code = document.getElementById('pay-code').value.trim();
   var amount = parseInt(document.getElementById('pay-amount').value);
+var screenshot = document.getElementById('pay-screenshot').files[0];
   var total = cart.reduce(function(s, i) { return s + i.price * i.qty; }, 0) + currentDeliveryFee;
 
-  if (!name || !contact || !email || !method || !code) {
-    alert('Please fill in all required fields!');
+  var hasPackage = cart.some(i => i.productId.startsWith('pkg-'));
+  var has3Gallon = cart.some(i => i.choiceName.includes('3 Gallons'));
+var hasIceCream = cart.some(i => i.productName === 'Ice Cream');
+  // REQUIRED FIELDS FIX
+ if (!name || !contact || !email || !method) {
+  alert('Please fill in all required fields!');
+  return;
+}
+
+if(method === "GCash" && !screenshot){
+  alert("Please upload your GCash payment screenshot!");
+  return;
+}
+
+  //  PACKAGE BOOKING RULE (2 DAYS BEFORE)
+  if (hasPackage) {
+    var schedDate = new Date(orderSchedule.date);
+    var now = new Date();
+    var diff = (schedDate - now) / (1000 * 60 * 60 * 24);
+
+    if (diff < 2) {
+      alert("Packages must be booked at least 2 days before.");
+      return;
+    }
+  }
+
+  //  COD RESTRICTIONS
+if (method === "Cash on Delivery") {
+
+  if (hasPackage) {
+    alert("Packages are NOT allowed for Cash on Delivery.");
     return;
   }
 
-  // build receipt
+  if (has3Gallon) {
+    alert("3 Gallon Stainless Tub is NOT allowed for Cash on Delivery.");
+    return;
+  }
+
+ if (hasIceCream) {
+    alert("Ice Cream is NOT allowed for Cash on Delivery.");
+    return;
+  }
+
+  if (amount !== 0) {
+    alert("For COD, amount paid should be 0.");
+    return;
+  }
+}
+
+  // GCASH RULES
+if (method === "GCash") {
+
+  var half = Math.ceil(total / 2);
+
+  if (hasPackage && amount < half) {
+    alert("Packages require at least 50% downpayment or full payment.");
+    return;
+  }
+
+  if (has3Gallon && amount < half) {
+    alert("3 Gallon Stainless Tub requires at least 50% downpayment or full payment.");
+    return;
+  }
+
+  if (hasIceCream && amount < half) {
+    alert("Ice Cream requires at least 50% downpayment or full payment.");
+    return;
+  }
+}
+
+  // RECEIPT
   var receiptHtml = '<table>' +
     '<tr><td>Customer</td><td>' + name + '</td></tr>' +
     '<tr><td>Contact</td><td>' + contact + '</td></tr>' +
     '<tr><td>Email</td><td>' + email + '</td></tr>' +
     '<tr><td>Address</td><td>' + document.getElementById('pay-address').value + '</td></tr>' +
     '<tr><td>Schedule</td><td>' + orderSchedule.date + ' at ' + orderSchedule.time + '</td></tr>' +
-    '<tr><td colspan="2" style="padding-top:10px;font-weight:700;">Items</td></tr>';
+    '<tr><td colspan="2"><strong>Items</strong></td></tr>';
 
   cart.forEach(function(item) {
-    receiptHtml += '<tr><td>' + item.productName + ' (' + item.choiceName + ') ×' + item.qty +
-      (item.flavors.length ? '<br><small>' + item.flavors.join(', ') + '</small>' : '') +
-      '</td><td>₱' + (item.price * item.qty).toLocaleString() + '</td></tr>';
-  });
+  var flavorText = '';
+  if (item.flavors && item.flavors.length > 0) {
+    flavorText = ' (Flavors: ' + item.flavors.join(', ') + ')';
+  }
+  receiptHtml += '<tr><td>' + item.productName + flavorText + ' (' + item.choiceName + ') x' + item.qty +
+    '</td><td>₱' + (item.price * item.qty).toLocaleString() + '</td></tr>';
+});
 
-  receiptHtml += '<tr><td>Delivery Fee</td><td>₱' + currentDeliveryFee.toLocaleString() + '</td></tr>' +
-    '<tr style="font-weight:700;"><td>Total</td><td>₱' + total.toLocaleString() + '</td></tr>' +
-    '<tr><td>Amount Paid</td><td>₱' + amount.toLocaleString() + '</td></tr>' +
-    '<tr><td>Balance</td><td>₱' + (total - amount).toLocaleString() + '</td></tr>' +
-    '<tr><td>Payment</td><td>' + method + '</td></tr>' +
-    '<tr><td>Ref Code</td><td>' + code + '</td></tr></table>' +
-     '<p style="font-size:0.75rem;color:#888;margin:10px 0;">*Customers can cancel order as long as it’s at least <strong>3 days before the scheduled date</strong> .</p>' +
+  var balance = method === "Cash on Delivery" ? total : total - amount;
+
+  receiptHtml +=
+    '<tr><td>Delivery Fee</td><td>₱' + currentDeliveryFee.toLocaleString() + '</td></tr>' +
+    '<tr><td>Total</td><td>₱' + total.toLocaleString() + '</td></tr>' +
+    '<tr><td>Paid</td><td>₱' + amount.toLocaleString() + '</td></tr>' +
+    '<tr><td>Balance</td><td>₱' + balance.toLocaleString() + '</td></tr>' +
+    '<tr><td>Method</td><td>' + method + '</td></tr></table>' +
+    '<p style="font-size:0.75rem;color:#888;margin:10px 0;">*Customers can cancel order as long as it’s at least <strong>3 days before the scheduled date</strong> .</p>' +
      '<p style="font-size:0.75rem;color:#888;margin:10px 0;">* To cancel, contact us at <strong>0929-214-1697 or message our social media accounts</strong> .</p>' +
-    '<p style="text-align:center;margin-top:15px;font-size:0.85rem;color:#888;">Thank you for your order! 🍦</p>';
+    '<p style="text-align:center;margin-top:15px;font-size:0.85rem;color:#888;">Thank you for your order! 🍦</p>'; 
 
   document.getElementById('receipt-body').innerHTML = receiptHtml;
 
-  // add to admin orders
+  // SAVE ORDER
   orders.push({
-    id: 'ORD-' + String(orders.length + 1).padStart(3, '0'),
-    customer: name, date: orderSchedule.date, time: orderSchedule.time,
-    area: orderSchedule.area, address: document.getElementById('pay-address').value,
-    items: cart.map(function(i) { return i.productName + ' (' + i.choiceName + ') x' + i.qty; }).join(', '),
-    total: total, status: 'pending'
-  });
+  id: 'ORD-' + String(orders.length + 1).padStart(3, '0'),
+  customer: name,
+  date: orderSchedule.date,
+  time: orderSchedule.time,
+  items: cart.map(i => i.productName + (i.flavors.length > 0 ? ' (' + i.flavors.join(', ') + ')' : '') + ' x' + i.qty).join(', '),
+  total: total,
+  paid: amount,
+  balance: balance,
+  status: method === "Cash on Delivery" ? "pending" : "confirmed"
+});
 
   cart = [];
   updateCartBadge();
+  resetSystem();
   showPage('receipt');
 }
 
 function backToHome() {
   showPage('home');
 }
+function resetSystem() {
 
+  // reset order schedule
+  orderSchedule = { date:'', time:'', area:'', address:'' };
+
+  // clear order page
+  document.getElementById('order-date').value = '';
+  document.getElementById('order-time').value = '';
+  document.getElementById('order-area').value = '';
+  document.getElementById('order-address').value = '';
+
+  // hide products
+  document.getElementById('products-section').style.display = 'none';
+
+  // clear payment fields
+  document.getElementById('pay-name').value = '';
+  document.getElementById('pay-contact').value = '';
+  document.getElementById('pay-email').value = '';
+  document.getElementById('pay-method').value = '';
+  document.getElementById('pay-amount').value = '';
+
+  // clear cart display
+  document.getElementById('cart-items').innerHTML = '';
+}
 // ===== ADMIN =====
 function adminLogin() {
   var email = document.getElementById('admin-email').value;
@@ -452,12 +613,12 @@ function renderDashboard() {
     '<div class="stat-card"><div class="number">' + products.length + '</div><div class="label">Products</div></div>';
 
   // orders table
-  var ordersHtml = '<table class="data-table"><tr><th>ID</th><th>Customer</th><th>Date</th><th>Items</th><th>Total</th><th>Status</th><th>Action</th></tr>';
+  var ordersHtml = '<table class="data-table"><tr><th>ID</th><th>Customer</th><th>Date</th><th>Items</th><th>Paid</th><th>Balance</th><th>Total</th><th>Status</th><th>Action</th></tr>';
   orders.filter(function(o) { return o.status !== 'cancelled'; }).forEach(function(o) {
     var canCancel = canCancelOrder(o);
     ordersHtml += '<tr><td>' + o.id + '</td><td>' + o.customer + '</td><td>' + o.date + '</td>' +
-      '<td style="max-width:150px;">' + o.items + '</td>' +
-      '<td>₱' + o.total.toLocaleString() + '</td>' +
+      '<td style="max-width:150px;">' + o.items + '</td>' + '<td>' +'₱'+ (o.paid || 0).toLocaleString() + '</td>' + '<td>' +'₱' + (o.balance || 0).toLocaleString() + '</td>' +
+      '<td>' +'₱' + o.total.toLocaleString() + '</td>' +
       '<td><span class="status-badge status-' + o.status + '">' + o.status + '</span></td>' +
       '<td><button class="btn btn-sm btn-danger" ' + (canCancel ? '' : 'disabled title="Cannot cancel within 3 days of schedule"') +
       ' onclick="cancelOrder(\'' + o.id + '\')">Cancel</button></td></tr>';
