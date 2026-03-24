@@ -21,11 +21,14 @@
       <button class="btn btn-outline" onclick="showPage('admin-login')">Admin Log-in 🔑</button>
     </div>
   </div>
+
   <footer>
+    
     <p>📞 0929-214-1697 | 📧 margiefeliperx78@gmail.com</p>
-    <p>🔗 instagram.com/gie41440 | 🔗 tiktok.com/@%40iamgie_14</p>
+    <p>🔗 instagram.com/gie41440 | 🔗 facebook.com/eigram.loisliam.61422</p>
     <p>📍 Maguinao, San Rafael, Bulacan, Philippines</p>
     <p>&copy; 2025 GieQueen's Ice Cream/Sherbet</p>
+    
   </footer>
 </div>
 
@@ -33,11 +36,11 @@
 <div id="page-order" class="page">
   <header>
     <div style="display:flex;align-items:center;gap:10px;">
-      <button onclick="showPage('home')">← Back</button>
+      <button class="btn btn-outline" onclick="showPage('home')">← Back</button>
       <h1>🍦 Order</h1>
     </div>
     <div class="cart-btn-wrap">
-      <button onclick="openCart()">🛒 Cart</button>
+      <button class="btn btn-outline" onclick="openCart()">🛒 Cart</button>
       <span class="cart-badge" id="cart-count">0</span>
     </div>
   </header>
@@ -60,12 +63,21 @@
         <label>Delivery Area (for service fee calculation)</label>
         <select id="order-area" onchange="updateDeliveryFee()">
           <option value="">-- Select Area --</option>
-          <option value="Meycauayan">Meycauayan</option><option value="Marilao">Marilao</option>
-          <option value="Bocaue">Bocaue</option><option value="Balagtas">Balagtas</option>
-          <option value="Guiguinto">Guiguinto</option><option value="Plaridel">Plaridel</option>
-          <option value="Malolos">Malolos</option><option value="Calumpit">Calumpit</option>
-          <option value="Obando">Obando</option><option value="Valenzuela">Valenzuela</option>
-          <option value="Bulacan (Other)">Bulacan (Other)</option>
+          <option value="Angat">Angat</option><option value="Balagtas">Balagtas</option>
+          <option value="Baliuag">Baliuag</option><option value="Bocaue">Bocaue</option>
+          <option value="Bulakan">Bulakan</option><option value="Bustos">Bustos</option>
+          <option value="Calumpit">Calumpit</option><option value="Doña Remedios Trinidad">Doña Remedios Trinidad</option>
+          <option value="Guiguinto">Guiguinto</option><option value="Hagonoy">Hagonoy</option>
+          <option value="Malolos">Malolos</option><option value="Marilao">Marilao</option>
+          <option value="Meycauayan">Meycauayan</option><option value="Norzagaray">Norzagaray</option>
+          <option value="Obando">Obando</option><option value="Pandi">Pandi</option>
+          <option value="Paombong">Paombong</option><option value="Plaridel">Plaridel</option>
+          <option value="Pulilan">Pulilan</option><option value="San Ildefonso">San Ildefonso</option>
+          <option value="San Jose Del Monte">San Jose Del Monte</option><option value="San Miguel">San Miguel</option>
+          <option value="San Rafael">San Rafael</option><option value="Santa Maria">Santa</option>
+          <option value="Pampanga (Other)">Pampanga (Other)</option>
+
+
         </select>
       </div>
       <div class="form-group">
@@ -105,7 +117,7 @@
     <div class="row"><span>Subtotal</span><span id="cart-subtotal">₱0</span></div>
     <div class="row"><span>Delivery Fee</span><span id="cart-delivery">₱0</span></div>
     <div class="row total-row"><span>Total</span><span id="cart-total">₱0</span></div>
-    <p style="font-size:0.75rem;color:#888;margin:10px 0;">* Packages need 50% advance payment to secure schedule. Remaing balance after service for event or delivery.</p>
+    <p style="font-size:0.75rem;color:#888;margin:10px 0;">* Packages and 3 Gallon stainless need 50% advance payment to secure schedule or you can fully paid it. Remaing balance can be paid after service for event or delivery.</p>
     <p style="font-size:0.75rem;color:#888;margin:10px 0;">*Customers can cancel order as long as it’s at least <strong>3 days before the scheduled date</strong> .</p>
      <p style="font-size:0.75rem;color:#888;margin:10px 0;">* To cancel, contact us at <strong>0929-214-1697 or message our social media accounts</strong> .</p>
     <button class="btn" style="width:100%;" onclick="goToPayment()">Proceed to Payment →</button>
@@ -117,7 +129,7 @@
 <div id="page-payment" class="page">
   <header>
     <div style="display:flex;align-items:center;gap:10px;">
-      <button onclick="showPage('order')">← Back</button>
+      <button class="btn btn-outline"onclick="showPage('order')">← Back</button>
       <h1>🍦 Payment</h1>
     </div>
   </header>
@@ -142,8 +154,9 @@
           <option>GCash</option><option>Cash on Delivery</option>
         </select>
       </div>
-      <div class="form-group"><label>Screenshot of Payment (URL)</label><input id="pay-screenshot" placeholder="Paste image link"></div>
-      <div class="form-group"><label>Payment Code *</label><input id="pay-code" placeholder="Confirmation code"></div>
+      <img id="qr-appear" src="gcash/systemQR.jpg" alt="GCash QR Code" width="460" height="600" style="display: none;"></img>
+      <div id="screenshot-appear" style="display: none;" class="form-group"><label>Screenshot of Payment (URL) *</label><input type="file" name="image" accept="image/*" id="pay-screenshot" placeholder="Paste image link"></div>
+      <!--<div class="form-group"><label>Payment Code *</label><input id="pay-code" placeholder="Confirmation code"></div>-->
       <button class="btn" style="width:100%;" onclick="submitPayment()">Done ✅</button>
     </div>
   </div>
@@ -153,7 +166,7 @@
 <div id="page-receipt" class="page">
   <header>
     <h1>🍦 Receipt</h1>
-    <button onclick="backToHome()">🏠 Home</button>
+    <button class="btn btn-outline" onclick="backToHome()">🏠 Home</button>
   </header>
   <div class="container">
     <div class="receipt" id="receipt-content">
@@ -171,7 +184,7 @@
 <div id="page-admin-login" class="page">
   <header>
     <div style="display:flex;align-items:center;gap:10px;">
-      <button onclick="showPage('home')">← Back</button>
+      <button class="btn btn-outline" onclick="showPage('home')">← Back</button>
       <h1>🍦 Admin Login</h1>
     </div>
   </header>
