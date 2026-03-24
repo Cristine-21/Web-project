@@ -11,7 +11,7 @@
 
 body {
   font-family: 'Nunito', sans-serif;
-  background-image: url("bg-GQ/bg-GQ.jpg");
+  background-image: url("bg/bg-GQ/bg-GQ.jpg");
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -77,7 +77,7 @@ header h1 {
 .btn:hover { background: #d63384; }
 
 .btn-outline {
-  background: transparent;
+  background: #FFFFFF;
   border: 2px solid #e84393;
   color: #e84393;
 }
@@ -471,8 +471,12 @@ header h1 {
 }
 
 footer {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
   text-align: center;
-  padding: 40px;
+  padding: 1rem;
   background: #e84393;
   color: white;
   margin-top: 105px;
@@ -550,5 +554,5 @@ footer {
   font-size: 1.2rem;
   cursor: pointer;
   font-weight: bold;
-  margin-left: 1025px;
+  margin-left: 1175px;
 }
